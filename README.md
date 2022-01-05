@@ -1,8 +1,8 @@
-Repo where I will upload old and new `BASH/Python` scripts.
+Repo where I will upload old and new `BASH` scripts.
 
 ---
 
-For now, there are only a few `BASH` scripts only.
+For now, there are only a few scripts that I find useful.
 
 ### Table of content:
 1. [get-dns-records](https://github.com/MladenSU/bash-scripts/tree/main/get-dns-records) - Accepts a domain name and returns the most common DNS records. 
