@@ -59,4 +59,5 @@ $ ./main.sh -d
 - Add an option to choose between tab `title` or `URL`
 - Add an option to remove single or multiple sites from the blocked list without completely deactivating it.
 - Restart the process rather than spawning a new subprocess.
-- Add an option to choose between different browsers. 
+- Add an option to choose between different browsers.
+- Add an option to choose how often the script should check the tabs. 
