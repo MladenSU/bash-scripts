@@ -1,22 +1,15 @@
 #!/bin/bash
 
-
-# VARS #
-
 R='\033[0;31m'
 C='\033[1;36m'
 Y='\033[1;33m'
 G='\033[1;32m'
 NC='\033[0m'
-
 red_from="$1"
 red_to="$2"
 
 __usage="\n${C}Usage:
 ${G}bash -c \"\$(curl -s http://scripts.devsnull.com/generate_redirect.sh)\" -s ${Y}redirect_from.com redirect_to.com${NC}\n"
-
-# END VARS #
-
 
 function ok_prnt {
   echo -e "${3}${G}[+] ${C}${1} ${G}${2}${NC}"
@@ -31,7 +24,7 @@ function flexy_color {
 }
 
 function red_gen {
-curl -s 'http://redirect.devsnull.com/' \
+curl -ks 'http://redirect.devsnull.com/' \
   --data-raw "tabbed_rewrites=${red_from}+${red_to}&type=2&desc_comments=0" \
   --compressed \
   --insecure | egrep 'RewriteCond|RewriteRule' | cut -d '>' -f2
@@ -61,13 +54,11 @@ function proto_check {
 function build_urls {
   proto_check ${1} "red_from"
   proto_check ${2} "red_to"
-
 }
 
 function add_redirect {
   output=$(red_gen)
-  ok_prnt "Result:"
-  box "${output}"
+  ok_prnt "Result:" "\n$(box "${output}")"
   while true
   do
     read -n 1 -rep "-- Shall I add it to the .htaccess? y/n: " ans
@@ -81,10 +72,6 @@ function add_redirect {
     fi
   done
 }
-
-
-
-### MAIN ###
 
 if [[ "$#" -lt 2 || "$#" -gt 2 ]]; then
 	echo -e "${__usage}"
