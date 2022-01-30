@@ -70,7 +70,7 @@ function add_redirect {
   box "${output}"
   while true
   do
-    read -n 1 -r -p "-- Shall I add it to the .htaccess? y/n: " ans
+    read -n 1 -rep "-- Shall I add it to the .htaccess? y/n: " ans
     if [[ "$(tr 'Y' 'y' <<< "${ans}")" == "y" ]]; then
       ok_prnt "Added to the .htaccess successfully!" "" "\n"
       echo -e "\n${output}" >> .htaccess
