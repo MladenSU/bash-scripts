@@ -68,14 +68,18 @@ function add_redirect {
   output=$(red_gen)
   ok_prnt "Result:"
   box "${output}"
-  read -n 1 -r -p "-- Shall I add it to the .htaccess? y/n: " ans
-  if [[ "$(tr 'Y' 'y' <<< "${ans}")" == "y" ]]; then
-    ok_prnt "Added to the .htaccess successfully!" "" "\n"
-    echo -e "\n${output}" >> .htaccess
-  elif [[ "$(tr 'N' 'n' <<< "${ans}")" == "n" ]]; then
-    ok_prnt "Aborting the process and NOT adding the rule in the .htaccess! Bye!" "" "\n"
-    exit 0
-  fi
+  while true
+  do
+    read -n 1 -r -p "-- Shall I add it to the .htaccess? y/n: " ans
+    if [[ "$(tr 'Y' 'y' <<< "${ans}")" == "y" ]]; then
+      ok_prnt "Added to the .htaccess successfully!" "" "\n"
+      echo -e "\n${output}" >> .htaccess
+      break
+    elif [[ "$(tr 'N' 'n' <<< "${ans}")" == "n" ]]; then
+      ok_prnt "Aborting the process and NOT adding the rule in the .htaccess! Bye!" "" "\n"
+      exit 0
+    fi
+  done
 }
 
 
