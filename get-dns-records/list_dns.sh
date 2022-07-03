@@ -1,6 +1,7 @@
 #!/bin/bash
 
 #Easy dig made by Mladen Uzunov (beta version) release 24/Dec/2020
+#Version 1.0
 
 in_domain="$1"
 domain=$(echo ${in_domain} | tr 'A-Z' 'a-z')
