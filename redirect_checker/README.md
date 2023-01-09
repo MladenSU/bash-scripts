@@ -1,5 +1,9 @@
 ### There is still no help option
 
-The basic usage is 
-redcheck -u <url>
-redcheck -f <file with urls> 
+1. The basic usage is:
+    ```bash
+    redcheck -u <url>
+    redcheck -f <file with urls> 
+    ```
+
+### Or read the fk source code
