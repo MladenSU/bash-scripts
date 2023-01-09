@@ -1,0 +1,120 @@
+#!/bin/bash
+
+# Version 1.0
+# Developed by Mladen
+
+R='\033[0;31m'
+C='\033[0;36m'
+Y='\033[0;33m'
+G='\033[1;32m'
+W='\033[0;37m'
+NC='\033[0m'
+
+function _print { echo -e "${G}[OK] ${W}${1}${NC}" ; }
+function _warning { echo -e "${Y}[WARN] ${W}${1}${NC}" ; }
+function _info { echo -e "${C}[INFO] ${W}${1}${NC}" ; }
+function _error { echo -e "${R}[ERROR] ${Y}${1}${NC}" ; }
+
+function _clean_up {
+    unset CUSTOM_RESOLVE DOMAIN_REGEX
+}
+
+function _exit {
+    _error "${1}"
+    exit 1
+}
+
+function _join_arr {
+    local IFS=" "
+    test -z "${1}" && _warning "No redirect found!"
+    sed -E 's#[[:space:]]+$##g; s#[[:space:]]+#|--->|#g' <<<"$*"
+}
+
+function _verify_file {
+    local FILE="${1}"
+    test -e "${FILE}" || _exit "Such file - ${FILE}, does not exist!"
+    test -s "${FILE}" || _exit "The file - ${FILE}, is empty!"
+}
+
+function _verify_domain {
+    local URL="${1}"
+    export DOMAIN_REGEX="([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]"
+    [[ "${URL}" =~ $DOMAIN_REGEX ]] || return 1
+}
+
+function _custom_curl {
+    local ARGUMENTS="$*"
+    curl -skLI --max-time 2 -H 'Cache-Control: no-cache' ${ARGUMENTS} | grep -i 'Location:' | awk '{print $2}' | tr '\n\r' ' '
+}
+
+function _send_request {
+    local URL="${1}"
+    if [[ -z "${CUSTOM_RESOLVE}" ]]; then
+        _custom_curl "${URL}"
+    else
+        local DOMAIN="$(grep -oE $DOMAIN_REGEX <<<\"${URL}\")"
+        _custom_curl "--resolve ${DOMAIN}:${CUSTOM_RESOLVE} ${URL}"
+        # { curl -skLI --max-time 2 -H 'Cache-Control: no-cache' --resolve "${DOMAIN}":"${CUSTOM_RESOLVE}" "${URL}" || echo "Unable to resolve!"; } | grep -iE 'Location:|^Unable' | awk '{if ($1 == "Unable") print; else print $2}' | tr '\n\r' ' '
+    fi
+}
+
+function _get_redirect {
+    local URL="${1}"
+    declare -a RESULTS
+    echo -n "${URL}|--->|" 
+    _verify_domain "${URL}"
+    if [[ "$?" -eq 0 ]]; then
+        RESULTS+=("$(_send_request ${URL})")
+        _join_arr "${RESULTS[@]}"
+    else
+        _error "Skipping this entry since it is not a valid domain!"
+    fi
+}
+
+function _loop_file {
+    local FILE="${1}"
+    _verify_file "${FILE}"
+    while read url; do
+        _get_redirect "${url}"
+    done < "${FILE}"
+}
+
+function _verify_args {
+    test -z ${2} && _exit "Parameter '${1}' was called, but no value was provided!"
+}
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+    --r|--resolve)
+        _verify_args $1 $2
+        CUSTOM_RESOLVE="${2}"
+        shift
+        shift
+        ;;
+    -f|--file)
+        _verify_args $1 $2
+        URL_FILE="${2}"
+        shift
+        shift
+        ;;
+    -u|--url)
+        _verify_args $1 $2
+        SINGLE_URL="${2}"
+        shift
+        shift
+        ;;
+    -*|--*|*)
+        echo "Unknown option $1"
+        exit 1
+        ;;
+    esac
+done
+
+function main {
+    test -n "${CUSTOM_RESOLVE}" && _info "Using custom server for resolve - ${CUSTOM_RESOLVE}!"
+    test -n "$URL_FILE" && _loop_file "$URL_FILE" && exit 0
+    test -n "$SINGLE_URL" && _get_redirect "$SINGLE_URL" && exit 0
+}
+
+
+main | column -s '|' -t
